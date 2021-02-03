@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>RemoteProvisioningServiceMock</name>
+    </assembly>
+    <members>
+        <member name="M:RemoteProvisioningServiceMock.Controllers.SettingsController.GetSettings(System.Int32,System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Get Response settings
+            </summary>
+            <param name="businessId">business acct id</param>
+            <param name="cardholderId">cardholder acct id</param>
+            <param name="ct">cancellation token</param>
+            <returns></returns>
+        </member>
+        <member name="M:RemoteProvisioningServiceMock.Controllers.SettingsController.InsertOrUpdateSettings(System.Int32,System.Int32,RemoteProvisioningServiceMock.Models.ResponseSettingsModel,System.Threading.CancellationToken)">
+            <summary>
+            Insert/Update Response settings
+            </summary>
+            <param name="businessId">business acct id</param>
+            <param name="cardholderId">cardholder acct id</param>
+            <param name="model"></param>
+            <param name="ct">cancellation token</param>
+            <returns></returns>
+        </member>
+        <member name="M:RemoteProvisioningServiceMock.Controllers.TokenController.TokenProvisioning(RemoteProvisioningServiceMock.Models.DecisionRequest,System.Threading.CancellationToken)">
+            <summary>
+            Return decision for step-up flow 
+            </summary>
+            <param name="model">token provisioning model</param>
+            <param name="ct">cancellation token</param>
+            <returns>decision response</returns>
+        </member>
+        <member name="M:RemoteProvisioningServiceMock.Controllers.TokenController.SendOtpCode(RemoteProvisioningServiceMock.Models.SendOtpRequest,System.Threading.CancellationToken)">
+            <summary>
+            Send OTP pass code for step up flow
+            </summary>
+            <param name="model">OTP pass code model</param>
+            <param name="ct">cancellation token</param>
+            <returns></returns>
+        </member>
+        <member name="M:RemoteProvisioningServiceMock.Controllers.TokenController.Callback(RemoteProvisioningServiceMock.Models.CallbackRequest,System.Threading.CancellationToken)">
+            <summary>
+            Receive callbacks about token creation
+            </summary>
+            <param name="model">callback model</param>
+            <param name="ct">cancellation token</param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>
