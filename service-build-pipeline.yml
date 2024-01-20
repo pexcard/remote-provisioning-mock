@@ -14,9 +14,22 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  buildConfiguration: 'Release'
+  buildConfiguration: 'Debug'
 
 steps:
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '8.x'
+
+- task: SonarCloudPrepare@1
+  inputs:
+    SonarCloud: 'SonarCloud - tbaker'
+    organization: 'pex'
+    projectKey: '$(Build.Repository.Name)'
+    projectName: '$(Build.Repository.Name)'
+    projectVersion: '$(Build.BuildNumber)'
+
 - script: dotnet build --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
 
@@ -26,3 +39,23 @@ steps:
     command: test
     projects: 'Tests/**/*.csproj'
     arguments: '--configuration $(buildConfiguration)'
+
+- task: SonarCloudAnalyze@1
+
+- task: SonarCloudPublish@1
+  inputs:
+    pollingTimeoutSec: '300'
+
+- task: WhiteSource@20
+  env:
+    NODE_TLS_REJECT_UNAUTHORIZED: 0
+  inputs:
+    cwd: '$(System.DefaultWorkingDirectory)'
+    extensions: '.dll'
+    checkPolicies: 'FAIL_ON_BUILD'
+    productName: 'Marketplace'
+    projectRule: 'projectName'
+    projectName: '$(Build.Repository.Name)'
+    forceCheckAllDependencies: true
+    forceUpdate: true
+    WhiteSourceService: 'WhiteSource'
