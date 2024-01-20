@@ -26,8 +26,8 @@ steps:
   inputs:
     SonarCloud: 'SonarCloud - tbaker'
     organization: 'pex'
-    projectKey: '$(Build.Repository.Name)'
-    projectName: '$(Build.Repository.Name)'
+    projectKey: 'remote-provisioning-mock'
+    projectName: 'remote-provisioning-mock'
     projectVersion: '$(Build.BuildNumber)'
 
 - script: dotnet build --configuration $(buildConfiguration)
