@@ -20,7 +20,7 @@ variables:
 - name: buildPlatform
   value: 'Any CPU'
 - name: buildconfiguration
-  value: 'Debug'
+  value: 'Release'
 - name: dotnetVersion
   value: '6.0'
 - name: DOTNET_ROLL_FORWARD
