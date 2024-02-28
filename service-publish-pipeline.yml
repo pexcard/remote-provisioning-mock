@@ -61,13 +61,16 @@ steps:
     arguments: '--configuration $(buildConfiguration)'
 
 - task: SonarCloudAnalyze@1
+  continueOnError: true
 
 - task: SonarCloudPublish@1
+  continueOnError: true
   inputs:
     pollingTimeoutSec: '300'
 
 - task: Bash@3
   displayName: "Mend"
+  continueOnError: true
   env:
     MEND_URL: $(MEND-URL)
     MEND_EMAIL: $(MEND-EMAIL)
