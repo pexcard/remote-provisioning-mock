@@ -1,4 +1,4 @@
-# ASP.NET Core
+﻿# ASP.NET Core
 # Build and test ASP.NET Core projects targeting .NET Core.
 # Add steps that run tests, create a NuGet package, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
@@ -12,9 +12,34 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  buildConfiguration: 'Release'
+- group: mend-variables
+- name: appName
+  value: 'remote-provisioning-mock'
+- name: solution
+  value: '**/*.sln'
+- name: buildPlatform
+  value: 'Any CPU'
+- name: buildconfiguration
+  value: 'Release'
+- name: dotnetVersion
+  value: '8.0'
+- name: DOTNET_ROLL_FORWARD
+  value: 'Major' # needed for sonarcloud scanner
 
 steps:
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '$(dotnetVersion).x'
+
+- task: SonarCloudPrepare@1
+  inputs:
+    SonarCloud: 'SonarCloud - tbaker'
+    organization: 'pex'
+    projectKey: '$(appName)'
+    projectName: '$(appName)'
+    projectVersion: '$(Build.BuildNumber)'
+
 - script: dotnet build --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
 
@@ -27,6 +52,55 @@ steps:
 
 - script: dotnet publish RemoteProvisioningServiceMock/RemoteProvisioningServiceMock.csproj --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
   displayName: 'dotnet publish RemoteProvisioningServiceMock/RemoteProvisioningServiceMock.csproj $(buildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet test'
+  inputs:
+    command: test
+    projects: 'Tests/**/*.csproj'
+    arguments: '--configuration $(buildConfiguration)'
+
+- task: SonarCloudAnalyze@1
+  continueOnError: true
+
+- task: SonarCloudPublish@1
+  continueOnError: true
+  inputs:
+    pollingTimeoutSec: '300'
+
+- task: Bash@3
+  displayName: "Mend"
+  continueOnError: true
+  env:
+    MEND_URL: $(MEND-URL)
+    MEND_EMAIL: $(MEND-EMAIL)
+    MEND_USER_KEY: $(MEND-USER-KEY)
+    MEND_LOG_LEVEL: DEBUG
+  inputs:
+    targetType: "inline"
+    failOnStderr: true
+    script: |
+      # https://github.com/mend-toolkit/mend-examples/blob/main/CI-CD/AzureDevOps/Mend%20CLI/AzureDevOps-linux.yaml
+      
+      # https://curl.se/docs/optionswhen.html
+      echo Downloading mend cli...
+      curl https://downloads.mend.io/cli/linux_amd64/mend -sS -o /usr/local/bin/mend && chmod +x /usr/local/bin/mend
+      
+      # https://docs.mend.io/bundle/integrations/page/configure_the_mend_cli_for_sca.html#Mend-CLI-SCA-parameters
+      mend dependencies --dir '$(System.DefaultWorkingDirectory)' --scope 'PEX//Marketplace//$(appName)' --non-interactive --update --fail-policy
+      
+      # https://docs.mend.io/bundle/integrations/page/mend_cli_exit_codes.html
+      export dep_exit=$?
+      
+      if [[ "$dep_exit" == "9" ]]; then
+          echo "##vso[task.logissue type=warning;] 🚨 Dependency scan policy violation."
+          echo "##vso[task.complete result=SucceededWithIssues;]"
+      elif [[ "$dep_exit" != "0" ]]; then
+          echo "##vso[task.logissue type=error;] ⚠️ Dependency scan failed. Exit code $dep_exit https://docs.mend.io/bundle/integrations/page/mend_cli_exit_codes.html"
+          echo "##vso[task.complete result=SucceededWithIssues;]"
+      else
+          echo "✅ No policy violations or failures occurred in dependencies scan"
+      fi
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish artifacts'

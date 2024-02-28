@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using RemoteProvisioningServiceMock.Extensions;
 using RemoteProvisioningServiceMock.Storage;
+using Swashbuckle.AspNetCore.SwaggerUI;
 
 namespace RemoteProvisioningServiceMock
 {
@@ -53,6 +55,11 @@ namespace RemoteProvisioningServiceMock
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Token Provisioning Mock API");
                 c.RoutePrefix = string.Empty;
+                c.DocumentTitle = "PEX Remote Provisioning Mock";
+                c.DocExpansion(DocExpansion.None);
+                c.DisplayRequestDuration();
+                c.EnableDeepLinking();
+                c.EnableTryItOutByDefault();
             });
 
             if (env.IsDevelopment())
